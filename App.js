@@ -1,38 +1,115 @@
-import {View, Text, TextInput, Button, StyleSheet} from 'react-native'
+import { useState } from 'react'
+import {View, Text, TextInput, Button, StyleSheet, ScrollView, FlatList, Modal} from 'react-native'
+import uuid from 'react-native-uuid';
 
 const App = () => {
+
+  const [modalVisible, setModalVisible] = useState (false)
+  const [idSelected , setIdSelected] = useState ("")
+
+  /*const [newTask, setNewTask] = useState("Vieja tarea") /* useState nos permite establecer un estado que podemos actualizarle el valor inicial, en este caso usamos como valor inicial "vieja tarea" y cuando sucede el evento (press) se cambia a "nueva tarea"*/
+  const [newTask, setNewTask] = useState({
+    title: '',
+    description: '',
+    id: ''
+  })
+  const [tasks, setTasks] = useState ([])
+
+  /* const tareas = ["primero", "segundo", 123,456] <---- ejemplo de un array */ 
+
+  /*const task = {
+    title: "",
+    description: "",
+    id: "jop009"        <---- ejemplo de un objeto
+
+  } */
+
+  const addTask = () => {
+    setTasks([...tasks, newTask])
+    console.log(newTask)
+    console.log(tasks)
+    setNewTask({
+      title: '',
+      description: '',
+      id: ''
+    })
+  }
+
+  /*onHandlerTitle = (t) => {
+    console.log(t)
+  }   <------- el hook onChangeText se acciona cuando se modifica, teclea o borra cualquier parte del texto, y en este caso, en esta funcion que se establecio recibia como par[ametro el texto y lo consologeaba*/
+
+  const onHandlerTitle = (t) => {
+    const id = uuid.v4()
+    setNewTask ({...newTask, title: t, id})
+    /* console.log(newTask) */
+  }
+
+  const onHandlerDescription = (t) => {
+    setNewTask ({...newTask, description: t})
+  }
+
+  const onHandlerModalDelete = (id) => {
+    setIdSelected(id)
+    setModalVisible(true)
+    //console.log(id)
+    //setTasks(tasks.filter(task => task.id != id))
+  }
+
+  const deleteTask = () => {
+    setTasks(tasks.filter(task => task.id != idSelected ))
+  }
 
   return (
     <View style={styles.container}>
 
       <View style={styles.inputContainer}>
-        <TextInput placeholder='Ingrese tarea' style={styles.input}/>
-        <Button color="#F5CEA7" title='ADD'/>
+        <TextInput value={newTask.title} onChangeText={onHandlerTitle} placeholder='Ingrese título' style={styles.input}/>
+        <TextInput value={newTask.description} onChangeText={onHandlerDescription} placeholder='Ingrese descripción' style={styles.input}/>
+        <Button color="#F5CEA7" title='Add' onPress={addTask}/>
+        {/*<Text>{newTask}</Text>*/}
       </View>
-
       <View style={styles.taskContainer}>
-        <View style={styles.taskCard}>
-          <Text style={styles.texto}>Tarea 1</Text>
-          <Button color="#F5CEA7" title='Del'/>
-        </View>
+        <FlatList
+          data={tasks}
+          keyExtractor={item => item.id}
+          renderItem={({item}) => (
+                              <View style={styles.taskCard}>
+                                <Text style={styles.texto}>{item.title}</Text>
+                                <Button color="#F5CEA7" title='Del' onPress={() => onHandlerModalDelete(item.id)}/>
+                              </View>
+          )}
+        />
+        <Modal
+          visible = {modalVisible}
+        >
+          <View>
+            <Text>¿Estás seguro que quieres eliminar?</Text>
+            <Button title='Sí' onPress={ () => {
+              deleteTask()
+              console.log ("Eliminado")
+              setModalVisible(false)
+              }} />
+            <Button title='No' onPress={ () => setModalVisible(false)} />
+          </View>
 
-        <View style={styles.taskCard}>
-          <Text style={styles.texto}>Tarea 2</Text>
-          <Button color="#F5CEA7" title='Del'/>
-        </View>
-
-        <View style={styles.taskCard}>
-          <Text style={styles.texto}>Tarea 3</Text>
-          <Button color="#F5CEA7" title='Del'/>
-        </View>
-
-        <View style={styles.taskCard}>
-          <Text style={styles.texto}>Tarea 4</Text>
-          <Button color="#F5CEA7" title='Del'/>
-        </View>
-
+        </Modal>
       </View>
 
+      {/*<ScrollView style={styles.taskContainer}>
+        {
+          tasks.map(task => (<View key={task.id} style={styles.taskCard}>
+                              <Text style={styles.texto}>{task.title}</Text>
+                              <Button color="#F5CEA7" title='Del'/>
+                            </View> )
+                    )
+        }
+      </ScrollView> */}
+
+      
+
+      {
+        /*
       <View style={styles.cardContainer}>
 
         <View style={styles.card}>
@@ -61,6 +138,8 @@ const App = () => {
         </View>
 
       </View>
+        */
+      }
 
     </View>
   )
@@ -79,7 +158,7 @@ const styles = StyleSheet.create({
   },
 
   inputContainer:{
-    flexDirection:"row",
+
     alignItems: "center",
     justifyContent: "space-around"
   },
@@ -96,8 +175,9 @@ const styles = StyleSheet.create({
   },
 
   taskContainer:{
-    alignItems: "center",
+    /*alignItems: "center",*/
     gap: 25,
+    marginVertical: 20
   },
 
   taskCard:{
@@ -106,6 +186,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     padding: 10,
     alignItems: "center",
+    marginVertical: 10
   },
 
   texto:{
@@ -119,6 +200,9 @@ const styles = StyleSheet.create({
     fontSize:16,
     width: "70%",
   },
+
+
+  /*
 
   cardContainer:{
     marginVertical:30,
@@ -140,19 +224,22 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
 
-  /*card3:{
+  card3:{
     backgroundColor: "#F582D1",
     width: 90,
     height: 140,
     margin: 10,
     padding: 10,
     borderRadius: 20
-  },*/
+  },
 
   textCard:{
     color: "white",
     fontSize: 16
   }
+
+  */
+  
 
 
 
